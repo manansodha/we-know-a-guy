@@ -13,90 +13,19 @@ services:
       retries: 3
     restart: unless-stopped
 
-  # Agent 1
-  agent_1:
+  # Scalable agent service. Scale with:
+  #   docker compose up -d --build --scale agent=<N>
+  agent:
     build: ./agent
+    command: ["python", "-u", "agent.py"]
     depends_on:
       mosquitto:
         condition: service_healthy
     volumes:
       - ./shared:/app/shared
     environment:
-      - NODE_ID=1
-      - ZONE=1
-
-  # Agent 2
-  agent_2:
-    build: ./agent
-    depends_on:
-      mosquitto:
-        condition: service_healthy
-    volumes:
-      - ./shared:/app/shared
-    environment:
-      - NODE_ID=2
-      - ZONE=1
       - BROKER=mosquitto
-      - GOSSIP_INTERVAL_SECONDS=3
-    restart: unless-stopped
-
-  # Agent 3
-  agent_3:
-    build: ./agent
-    depends_on:
-      mosquitto:
-        condition: service_healthy
-    volumes:
-      - ./shared:/app/shared
-    environment:
-      - NODE_ID=3
-      - ZONE=2
-      - BROKER=mosquitto
-      - GOSSIP_INTERVAL_SECONDS=3
-    restart: unless-stopped
-
-  # Agent 4
-  agent_4:
-    build: ./agent
-    depends_on:
-      mosquitto:
-        condition: service_healthy
-    volumes:
-      - ./shared:/app/shared
-    environment:
-      - NODE_ID=4
-      - ZONE=2
-      - BROKER=mosquitto
-      - GOSSIP_INTERVAL_SECONDS=3
-    restart: unless-stopped
-
-  # Agent 5
-  agent_5:
-    build: ./agent
-    depends_on:
-      mosquitto:
-        condition: service_healthy
-    volumes:
-      - ./shared:/app/shared
-    environment:
-      - NODE_ID=5
-      - ZONE=3
-      - BROKER=mosquitto
-      - GOSSIP_INTERVAL_SECONDS=3
-    restart: unless-stopped
-
-  # Agent 6
-  agent_6:
-    build: ./agent
-    depends_on:
-      mosquitto:
-        condition: service_healthy
-    volumes:
-      - ./shared:/app/shared
-    environment:
-      - NODE_ID=6
-      - ZONE=3
-      - BROKER=mosquitto
+      - DASHBOARD_URL=http://dashboard:5555/api/report
       - GOSSIP_INTERVAL_SECONDS=3
     restart: unless-stopped
 
@@ -110,6 +39,7 @@ services:
     environment:
       - MQTT_BROKER_HOST=mosquitto
       - MQTT_BROKER_PORT=1883
+      - EXPECTED_NODES=${EXPECTED_NODES:-0}
     ports:
       - "5555:5555"
     restart: unless-stopped

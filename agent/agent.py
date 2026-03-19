@@ -27,7 +27,7 @@ class BelimoAgent:
         self.torque_memory = []
         self.started_at = time.time()
         self.power_on = True
-        self.status = "OPTIMAL"
+        self.status = "HEALTHY"
         self.role = "LEADER_ACTIVE" if self.slot == LEADER_SLOT else "FOLLOWER"
         self.current_leader = None
         self.leader_timeout = 0
@@ -151,24 +151,53 @@ class BelimoAgent:
         
         # 1. Handle Leader Election (Human-in-the-Loop)
         if msg.topic == TOPIC_LEADER:
-            if payload['role'] == "LEADER_ACTIVE" and payload['node_id'] != self.node_id:
-                self.current_leader = payload['node_id']
+            role = payload.get('role')
+            leader_node = payload.get('node_id')
+
+            if role == "LEADER_ACTIVE" and leader_node != self.node_id:
+                self.current_leader = leader_node
                 self.role = "FOLLOWER"
                 self.leader_timeout = time.time() + 30 # Deadman switch: 30 seconds
                 print(f"[{self.node_id}] User connected at {self.current_leader}. Yielding authority. I am now a FOLLOWER.")
+            elif role == "LEADER_OFFLINE" and leader_node != self.node_id:
+                if self.current_leader == leader_node:
+                    print(f"[{self.node_id}] Leader {leader_node} reported offline. Scheduling re-election.")
+                    self.current_leader = None
+                    self.leader_timeout = 0
+                    self.next_leader_claim_at = time.time() + random.uniform(1, 3)
 
         elif msg.topic == TOPIC_CONTROL:
             target = payload.get("target")
             command = payload.get("command")
             if target in (self.node_id, "ALL"):
                 if command == "POWER_OFF" and self.power_on:
+                    if self.role == "LEADER_ACTIVE":
+                        self.client.publish(
+                            TOPIC_LEADER,
+                            json.dumps(
+                                {
+                                    "timestamp": datetime.now().isoformat(),
+                                    "node_id": self.node_id,
+                                    "role": "LEADER_OFFLINE",
+                                    "zone": self.zone,
+                                }
+                            ),
+                        )
                     self.power_on = False
                     self.status = "OFFLINE"
+                    self.role = "FOLLOWER"
+                    self.current_leader = None
+                    self.leader_timeout = 0
+                    self.next_leader_claim_at = time.time() + random.uniform(1, 3)
                     print(f"[{self.node_id}] Power command received: OFF")
                     self.gossip("Powered off by dashboard", 0.0)
                 elif command == "POWER_ON" and not self.power_on:
                     self.power_on = True
-                    self.status = "OPTIMAL"
+                    self.status = "HEALTHY"
+                    self.role = "FOLLOWER"
+                    self.current_leader = None
+                    self.leader_timeout = 0
+                    self.next_leader_claim_at = time.time() + random.uniform(1, 3)
                     print(f"[{self.node_id}] Power command received: ON")
                     self.gossip("Powered on by dashboard", 20.0)
                 
@@ -229,9 +258,9 @@ class BelimoAgent:
                     self.status = "STRUGGLING"
                     self.gossip("Mechanical Blockage Detected!", current_torque)
             else:
-                if self.status != "OPTIMAL":
-                    self.status = "OPTIMAL"
-                    self.gossip("Back to Normal.", current_torque)
+                if self.status != "HEALTHY":
+                    self.status = "HEALTHY"
+                    self.gossip("Back to Healthy.", current_torque)
 
     def _format_uptime(self):
         elapsed = int(time.time() - self.started_at)
@@ -286,6 +315,9 @@ class BelimoAgent:
 
     def check_leader_timeout(self):
         """Deadman switch: Revert to peer if human unplugs"""
+        if not self.power_on:
+            return
+
         now = time.time()
 
         if self.role == "FOLLOWER" and self.current_leader and now > self.leader_timeout:
