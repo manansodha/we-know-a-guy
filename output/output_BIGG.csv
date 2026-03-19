@@ -1,4 +1,4 @@
-2026-03-19 14:53:39,time_stamp,test_number,setpoint_position_%,feedback_position_,rotation_direction,internal_temperature_deg_C,motor_torque_Nmm,power_W
+time_stamp,test_number,setpoint_position_%,feedback_position_,internal_temperature_deg_C,motor_torque_Nmm,power_W
 2026-03-19 14:53:39,+1, 080.0, 079.9,0, 28.2,+00.0,+000.0
 2026-03-19 14:53:40,+1, 020.0, 079.9,2, 28.2,+01.1,+515.6
 2026-03-19 14:53:40,+1, 020.0, 079.7,2, 28.2,+00.8,+367.2

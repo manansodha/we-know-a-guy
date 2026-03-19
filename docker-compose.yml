@@ -19,6 +19,8 @@ services:
     environment:
       - NODE_ID=1
       - ZONE=1
+      - IS_LEADER=true
+      - ALERT_MIN_ANOMALIES=2
 
   # Agent 2
   agent_2:
