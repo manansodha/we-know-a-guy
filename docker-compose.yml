@@ -1,0 +1,19 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    ports: ["1883:1883"]
+
+  agent-a:
+    build: .
+    environment: [NODE_ID=TLM0100] # Lowest ID
+    depends_on: [mosquitto]
+
+  agent-b:
+    build: .
+    environment: [NODE_ID=TLM0101] # Higher ID (Will become leader)
+    depends_on: [mosquitto]
+
+  agent-c:
+    build: .
+    environment: [NODE_ID=TLM0200] # Highest ID (Will be the ultimate leader)
+    depends_on: [mosquitto]
