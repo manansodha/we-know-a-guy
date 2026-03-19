@@ -24,9 +24,6 @@ services:
     environment:
       - NODE_ID=1
       - ZONE=1
-      - BROKER=mosquitto
-      - GOSSIP_INTERVAL_SECONDS=3
-    restart: unless-stopped
 
   # Agent 2
   agent_2:
