@@ -1,0 +1,35 @@
+
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    container_name: belimo-mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1883"]
+      interval: 1s
+      timeout: 5s
+      retries: 3
+    networks:
+      - belimo-net
+
+  pi-node:
+    build: .
+    environment:
+      - BROKER=mqtt-broker
+      - LEADER_SLOT=${LEADER_SLOT:-1}
+      - DASHBOARD_URL=${DASHBOARD_URL:-http://host.docker.internal:5555/api/report}
+    depends_on:
+      mqtt-broker:
+        condition: service_healthy
+    networks:
+      - belimo-net
+    restart: unless-stopped
+
+networks:
+  belimo-net:
+    driver: bridge
