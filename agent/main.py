@@ -71,7 +71,8 @@ try:
         
         # Gossip to the neighbors
         payload = GossipProtocol.format_telemetry(NODE_ID, sim_torque, 50, state)
-        client.publish(f"belimo/gossip/{ZONE}", payload)
+        result = client.publish(f"belimo/gossip/{ZONE}", payload)
+        print(f"Published: {payload} with result code {result.rc}")
         
         time.sleep(5)
 except KeyboardInterrupt:
