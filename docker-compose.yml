@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  # The central 'Bus' for the gossip
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  # Agent 1
+  agent_1:
+    build: ./agent
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ID=1
+      - ZONE=1
+
+  # Agent 2
+  agent_2:
+    build: ./agent
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ID=2
+      - ZONE=1
+
+  # Agent 3
+  agent_3:
+    build: ./agent
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ID=3
+      - ZONE=2
+
+  # Agent 4
+  agent_4:
+    build: ./agent
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ID=4
+      - ZONE=2
+
+  # Agent 5
+  agent_5:
+    build: ./agent
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ID=5
+      - ZONE=3
+
+  # Agent 6
+  agent_6:
+    build: ./agent
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - NODE_ID=6
+      - ZONE=3
+
+  # # Dashboard to visualize the swarm
+  # dashboard:
+  #   build: ./dashboard
+  #   ports:
+  #     - "8050:8050"
+  #   depends_on:
+  #     - mosquitto

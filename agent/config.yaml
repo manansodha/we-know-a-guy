@@ -1,0 +1,5 @@
+node_id: "Pi_Alpha_01"
+zone: "Floor1_North"
+broker: "mosquitto" # Inside docker-compose, use the service name
+sensors:
+  - "damper_actuator_01"
