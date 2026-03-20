@@ -1,5 +1,4 @@
 services:
-  # The central 'Bus' for the gossip
   mosquitto:
     image: eclipse-mosquitto:latest
     ports:
@@ -13,8 +12,8 @@ services:
       retries: 3
     restart: unless-stopped
 
-  # Scalable agent service. Scale with:
-  #   docker compose up -d --build --scale agent=<N>
+  # To launch multiple agents, use the --scale option with the agent service
+  # docker compose up -d --build --scale agent=<N>
   agent:
     build: ./agent
     command: ["python", "-u", "agent.py"]

@@ -2,7 +2,7 @@
 """
 Raspberry Pi Fleet Monitoring Dashboard
 ========================================
-A Flask-based dashboard for monitoring 10+ Raspberry Pis.
+A Flask-based dashboard for monitoring Raspberry Pi devices.
 
 Usage:
   1. pip install flask
@@ -34,7 +34,7 @@ PI_ALIASES = {}
 PI_POWER_STATES = {}
 PI_TELEMETRY = {}
 DATA_LOCK = threading.Lock()
-STALE_SECONDS = 60  # Mark Pi as offline after 60s without a heartbeat
+STALE_SECONDS = 60  # Mark Pi as offline after 60s without a 'heartbeat'
 OFFLINE_PRUNE_MINUTES = int(os.getenv("OFFLINE_PRUNE_MINUTES", "10"))
 OFFLINE_PRUNE_SECONDS = max(OFFLINE_PRUNE_MINUTES, 1) * 60
 TELEMETRY_RETENTION_POINTS = int(os.getenv("TELEMETRY_RETENTION_POINTS", "360"))

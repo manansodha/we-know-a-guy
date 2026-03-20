@@ -12,22 +12,21 @@ sensors = df['sensor_id'].unique().tolist()
 client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
 client.connect("mosquitto", 1883)
 
-# Track if a sensor is currently in a "Failure Burst"
+# Track anomalies in the sensor
 active_anomalies = {s: 0 for s in sensors} 
 
 while True:
     for sensor_id in sensors:
         for field, meta in stats.items():
             value = random.gauss(meta['mean'], meta['std'])
-            
-            # Start a new anomaly burst (1% chance)
+           
+           # Simulate anomaly
             if active_anomalies[sensor_id] == 0 and random.random() > 0.99:
-                active_anomalies[sensor_id] = 10 # Lasts for 10 cycles
-                print(f"🔥 STARTING ANOMALY BURST: {sensor_id}")
+                active_anomalies[sensor_id] = 10 
+                print(f"{sensor_id}")
 
-            # If in a burst, amplify the value significantly
             if active_anomalies[sensor_id] > 0:
-                value *= 3.0 # 3x is high enough to bypass any Z-score threshold
+                value *= 3.0 
                 active_anomalies[sensor_id] -= 1
 
             payload = {"node_id": sensor_id, "_field": field, "_value": value}
